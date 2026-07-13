@@ -2,6 +2,32 @@ import type { Currency, Payment, PaymentMethod, PaymentStatus } from './types';
 
 const ATTENTION_ON_DEBIT_FROM_EUR = new Set(['p2', 'p9']);
 
+function methodChangeNeedsAttention(
+  payment: Payment,
+  toMethod: PaymentMethod,
+): boolean {
+  if (payment.paymentMethod === toMethod) return false;
+
+  const from = payment.paymentMethod;
+
+  if (from === 'gbp_balance' && toMethod === 'eur_balance') return false;
+  if (from === 'eur_balance' && toMethod === 'debit_card') {
+    return ATTENTION_ON_DEBIT_FROM_EUR.has(payment.id);
+  }
+  if (from === 'gbp_balance' && toMethod === 'debit_card') {
+    return payment.currency === 'EUR';
+  }
+  if (from === 'debit_card' && toMethod === 'gbp_balance') {
+    return payment.currency === 'EUR';
+  }
+  if (from === 'debit_card' && toMethod === 'eur_balance') return false;
+  if (from === 'eur_balance' && toMethod === 'gbp_balance') {
+    return payment.currency === 'EUR';
+  }
+
+  return false;
+}
+
 export function evaluateMethodChange(
   payment: Payment,
   toMethod: PaymentMethod,
@@ -10,34 +36,12 @@ export function evaluateMethodChange(
     return payment.status;
   }
 
-  const from = payment.paymentMethod;
-
-  if (from === 'gbp_balance' && toMethod === 'eur_balance') {
-    return 'ready';
+  if (methodChangeNeedsAttention(payment, toMethod)) {
+    return 'needs_attention';
   }
 
-  if (from === 'eur_balance' && toMethod === 'debit_card') {
-    return ATTENTION_ON_DEBIT_FROM_EUR.has(payment.id)
-      ? 'needs_attention'
-      : 'ready';
-  }
-
-  if (from === 'gbp_balance' && toMethod === 'debit_card') {
-    return payment.currency === 'EUR' ? 'needs_attention' : 'ready';
-  }
-
-  if (from === 'debit_card' && toMethod === 'gbp_balance') {
-    return payment.currency === 'EUR' ? 'needs_attention' : 'ready';
-  }
-
-  if (from === 'debit_card' && toMethod === 'eur_balance') {
-    return 'ready';
-  }
-
-  if (from === 'eur_balance' && toMethod === 'gbp_balance') {
-    return payment.currency === 'EUR' ? 'needs_attention' : 'ready';
-  }
-
+  if (payment.status === 'needs_approval') return 'needs_approval';
+  if (payment.status === 'approved') return 'approved';
   return 'ready';
 }
 
@@ -53,12 +57,42 @@ export function groupByPaymentMethod(payments: Payment[]): Map<PaymentMethod, Pa
   return groups;
 }
 
-export function getReadyPayments(payments: Payment[]): Payment[] {
-  return payments.filter((p) => p.status === 'ready');
+export function isPayable(status: PaymentStatus): boolean {
+  return status === 'ready' || status === 'approved';
+}
+
+export function getPayablePayments(payments: Payment[]): Payment[] {
+  return payments.filter((p) => isPayable(p.status));
+}
+
+export function getNeedsApprovalPayments(payments: Payment[]): Payment[] {
+  return payments.filter((p) => p.status === 'needs_approval');
 }
 
 export function getAttentionPayments(payments: Payment[]): Payment[] {
   return payments.filter((p) => p.status === 'needs_attention');
+}
+
+export interface StatusCounts {
+  ready: number;
+  needs_approval: number;
+  approved: number;
+  needs_attention: number;
+}
+
+export function countByStatus(payments: Payment[]): StatusCounts {
+  const counts: StatusCounts = {
+    ready: 0,
+    needs_approval: 0,
+    approved: 0,
+    needs_attention: 0,
+  };
+
+  for (const payment of payments) {
+    counts[payment.status] += 1;
+  }
+
+  return counts;
 }
 
 export interface CurrencySummary {
@@ -122,7 +156,14 @@ export function countAttentionAfterChange(
   ).length;
 }
 
-export function otherMethods(current: PaymentMethod): PaymentMethod[] {
-  const all: PaymentMethod[] = ['gbp_balance', 'eur_balance', 'debit_card'];
-  return all.filter((m) => m !== current);
+export function approvePayments(
+  payments: Payment[],
+  paymentIds: string[],
+): Payment[] {
+  const idSet = new Set(paymentIds);
+  return payments.map((payment) =>
+    idSet.has(payment.id) && payment.status === 'needs_approval'
+      ? { ...payment, status: 'approved' as PaymentStatus }
+      : payment,
+  );
 }

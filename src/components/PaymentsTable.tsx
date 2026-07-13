@@ -9,6 +9,7 @@ import {
 interface PaymentsTableProps {
   payments: Payment[];
   selectedIds: Set<string>;
+  highlightedIds: Set<string>;
   onToggle: (id: string) => void;
   onToggleAll: () => void;
 }
@@ -16,6 +17,7 @@ interface PaymentsTableProps {
 export function PaymentsTable({
   payments,
   selectedIds,
+  highlightedIds,
   onToggle,
   onToggleAll,
 }: PaymentsTableProps) {
@@ -50,10 +52,18 @@ export function PaymentsTable({
         <tbody>
           {payments.map((payment) => {
             const isSelected = selectedIds.has(payment.id);
+            const isHighlighted = highlightedIds.has(payment.id);
+            const rowClass = [
+              isSelected ? 'payments-table__row--selected' : '',
+              isHighlighted ? 'payments-table__row--updated' : '',
+            ]
+              .filter(Boolean)
+              .join(' ');
+
             return (
               <tr
                 key={payment.id}
-                className={isSelected ? 'payments-table__row--selected' : ''}
+                className={rowClass || undefined}
                 onClick={() => onToggle(payment.id)}
               >
                 <td className="col-checkbox" onClick={(e) => e.stopPropagation()}>

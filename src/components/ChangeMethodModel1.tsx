@@ -64,13 +64,13 @@ export function ChangeMethodModel1({
   if (step === 'pick-method' && activeMethod) {
     return (
       <Modal
-        title={`Change payment method — ${activePayments.length} payment${activePayments.length !== 1 ? 's' : ''}`}
+        title="Choose how to pay"
         onClose={onClose}
+        onBack={handleBackFromPicker}
       >
         <PaymentMethodPicker
           currentMethod={activeMethod}
           onSelect={handlePickMethod}
-          onCancel={handleBackFromPicker}
         />
       </Modal>
     );

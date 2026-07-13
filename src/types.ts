@@ -1,5 +1,9 @@
 export type PaymentMethod = 'gbp_balance' | 'eur_balance' | 'debit_card';
-export type PaymentStatus = 'ready' | 'needs_attention';
+export type PaymentStatus =
+  | 'ready'
+  | 'needs_approval'
+  | 'approved'
+  | 'needs_attention';
 export type Currency = 'GBP' | 'EUR';
 export type InteractionModel = 'model1' | 'model2' | 'model3';
 
@@ -22,6 +26,8 @@ export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
 
 export const STATUS_LABELS: Record<PaymentStatus, string> = {
   ready: 'Ready to pay',
+  needs_approval: 'Needs approval',
+  approved: 'Approved',
   needs_attention: 'Needs attention',
 };
 

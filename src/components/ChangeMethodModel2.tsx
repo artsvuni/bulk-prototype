@@ -54,16 +54,15 @@ export function ChangeMethodModel2({
   };
 
   if (editingMethod !== null) {
-    const groupPayments = groups.get(editingMethod) ?? [];
     return (
       <Modal
-        title={`Change — ${groupPayments.length} payment${groupPayments.length !== 1 ? 's' : ''}`}
-        onClose={() => setEditingMethod(null)}
+        title="Choose how to pay"
+        onClose={onClose}
+        onBack={() => setEditingMethod(null)}
       >
         <PaymentMethodPicker
           currentMethod={editingMethod}
           onSelect={handleSelectMethod}
-          onCancel={() => setEditingMethod(null)}
         />
       </Modal>
     );
