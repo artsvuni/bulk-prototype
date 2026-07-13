@@ -30,6 +30,7 @@ export const INITIAL_PAYMENTS: Payment[] = [
     paymentMethod: 'gbp_balance',
     dueDate: '2026-07-20',
     status: 'needs_attention',
+    issueCount: 2,
   },
   {
     id: 'p4',
@@ -70,6 +71,7 @@ export const INITIAL_PAYMENTS: Payment[] = [
     paymentMethod: 'eur_balance',
     dueDate: '2026-07-14',
     status: 'needs_attention',
+    issueCount: 1,
   },
   {
     id: 'p8',
@@ -120,6 +122,7 @@ export const INITIAL_PAYMENTS: Payment[] = [
     paymentMethod: 'debit_card',
     dueDate: '2026-07-13',
     status: 'needs_attention',
+    issueCount: 3,
   },
 ];
 

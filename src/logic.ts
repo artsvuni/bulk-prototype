@@ -141,6 +141,12 @@ export function applyMethodChange(
       ...payment,
       paymentMethod: toMethod,
       status: newStatus,
+      issueCount:
+        newStatus === 'needs_attention'
+          ? payment.status === 'needs_attention'
+            ? payment.issueCount ?? 1
+            : 1
+          : undefined,
     };
   });
 

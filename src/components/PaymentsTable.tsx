@@ -2,8 +2,8 @@ import type { Payment } from '../types';
 import {
   formatAmount,
   formatDueDate,
+  formatStatusLabel,
   PAYMENT_METHOD_LABELS,
-  STATUS_LABELS,
 } from '../types';
 
 interface PaymentsTableProps {
@@ -85,7 +85,7 @@ export function PaymentsTable({
                   <span
                     className={`status-badge status-badge--${payment.status}`}
                   >
-                    {STATUS_LABELS[payment.status]}
+                    {formatStatusLabel(payment)}
                   </span>
                 </td>
               </tr>

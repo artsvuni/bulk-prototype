@@ -16,6 +16,8 @@ export interface Payment {
   paymentMethod: PaymentMethod;
   dueDate: string;
   status: PaymentStatus;
+  /** Number of unresolved issues when status is needs_attention */
+  issueCount?: number;
 }
 
 export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
@@ -30,6 +32,14 @@ export const STATUS_LABELS: Record<PaymentStatus, string> = {
   approved: 'Approved',
   needs_attention: 'Needs attention',
 };
+
+export function formatStatusLabel(payment: Payment): string {
+  if (payment.status === 'needs_attention') {
+    const count = payment.issueCount ?? 1;
+    return `Needs attention · ${count} issue${count !== 1 ? 's' : ''}`;
+  }
+  return STATUS_LABELS[payment.status];
+}
 
 export function formatAmount(amount: number, currency: Currency): string {
   const symbol = currency === 'GBP' ? '£' : '€';
